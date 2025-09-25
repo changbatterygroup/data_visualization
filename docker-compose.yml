@@ -1,6 +1,6 @@
 services:
   broker:
-    build: ./MQTT
+    build: ./mqtt
     container_name: mqtt_broker
     ports:
       - "1883:1883"
@@ -8,5 +8,44 @@ services:
       - mosquitto_data:/mosquitto/data
     restart: unless-stopped
 
+  influxdb:
+    build: ./influxdb
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  telegraf:
+    build: ./telegraf
+    container_name: telegraf
+    depends_on:
+      broker:
+        condition: service_started
+      influxdb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  grafana:
+    build: ./grafana
+    container_name: grafana
+    ports:
+      - "0.0.0.0:3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   mosquitto_data:
+  influxdb_data:
+  grafana_data:
