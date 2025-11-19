@@ -4,6 +4,8 @@
 # all of the backup data will be stored on one drive folder defined in the .env file.
 # Backups 7 days or older will be deleted when this script runs.
 
+export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH
+
 source "$(dirname "$0")/.env"
 
 DATE=$(date +%Y-%m-%d)
